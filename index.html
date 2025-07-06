@@ -4,329 +4,260 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام الحضور والانصراف - ABANS</title>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
-    <!-- SheetJS (xlsx) for Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <script>
         tailwind.config = { darkMode: 'class' };
     </script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
-        body { font-family: 'Cairo', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        .page { display: none; }
+        body { font-family: 'Cairo', sans-serif; }
         #camera-input, #report-file-input { display: none; }
-        #loading-overlay .spinner { border-top-color: #6366f1; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #78716c; }
-        .dark ::-webkit-scrollbar-track { background: #2d3748; }
-        .dark ::-webkit-scrollbar-thumb { background: #4a5568; }
-        .dark ::-webkit-scrollbar-thumb:hover { background: #718096; }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-500">
 
-    <button id="theme-toggle" class="fixed top-4 right-4 z-50 p-2 rounded-full bg-slate-200 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
+    <button id="theme-toggle" class="fixed top-4 right-4 z-50 p-2 rounded-full bg-slate-200 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
         <i class="fas fa-moon text-indigo-400 hidden dark:inline"></i>
     </button>
     
-    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[999]" style="display: none;">
-        <div class="spinner animate-spin rounded-full h-16 w-16 border-4 border-slate-400"></div>
-    </div>
-
-    <!-- ===== LOGIN PAGE ===== -->
-    <div id="login-page" class="page min-h-screen flex flex-col items-center justify-center p-4">
+    <div id="login-page" class="page min-h-screen flex-col items-center justify-center p-4" style="display: none;">
         <div class="w-full max-w-md">
-            <div class="text-center mb-8">
-                <h1 class="text-5xl font-bold text-indigo-600 dark:text-indigo-400">ABANS</h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-2">نظام الحضور والانصراف الذكي</p>
-            </div>
-            <div class="bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-8">
+            <div class="text-center mb-8"><h1 class="text-4xl font-bold text-indigo-600 dark:text-indigo-400">ABANS</h1><p class="text-slate-500 dark:text-slate-400 mt-1">نظام الحضور والانصراف</p></div>
+            <div class="bg-white dark:bg-slate-800 shadow-xl rounded-2xl p-8">
                 <h2 class="text-2xl font-semibold text-center mb-6">تسجيل الدخول</h2>
                 <form id="login-form">
-                    <div class="mb-4">
-                        <label for="email" class="block mb-2 text-sm font-medium">البريد الإلكتروني</label>
-                        <input type="email" id="email" class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-                    </div>
-                    <div class="mb-6">
-                        <label for="password" class="block mb-2 text-sm font-medium">كلمة المرور</label>
-                        <input type="password" id="password" class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-transform duration-200 hover:scale-105">
-                        <i class="fas fa-sign-in-alt mr-2"></i> دخول
-                    </button>
+                    <div class="mb-4"><label for="username" class="block mb-2 text-sm font-medium">اسم المستخدم</label><input type="text" id="username" class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg" required></div>
+                    <div class="mb-6"><label for="password" class="block mb-2 text-sm font-medium">كلمة المرور</label><input type="password" id="password" class="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg" required></div>
+                    <div class="mb-6 text-center"><label class="block mb-2 text-sm font-medium">التحقق الأمني: ما هو ناتج العملية؟</label><div class="flex items-center justify-center gap-4"><span id="captcha-question" class="text-lg font-bold bg-slate-200 dark:bg-slate-700 px-4 py-2 rounded-lg"></span><input type="number" id="captcha-answer" class="w-24 px-4 py-2 text-center bg-slate-100 dark:bg-slate-700 border rounded-lg" required></div></div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">دخول</button>
                 </form>
-                <p id="login-error" class="text-red-500 text-center mt-4 hidden"></p>
+                <p id="error-message" class="text-red-500 text-center mt-4 hidden"></p>
             </div>
         </div>
-        <footer class="text-center text-slate-500 dark:text-slate-400 mt-12">
-            <h3 class="font-semibold mb-2">عن شركة ABANS</h3>
-            <p class="max-w-prose">شركة رائدة في تقديم الحلول البرمجية والتقنية المبتكرة التي تساعد الشركات على تحقيق أهدافها بكفاءة وفعالية.</p>
-        </footer>
-    </div>
-    
-    <!-- ===== CRITICAL ERROR PAGE (NEW) ===== -->
-    <div id="error-page" class="page min-h-screen flex flex-col items-center justify-center p-4 text-center">
-        <div class="bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-8 max-w-lg">
-            <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
-            <h2 class="text-2xl font-bold mb-2">خطأ في الحساب</h2>
-            <p id="error-message-text" class="text-slate-600 dark:text-slate-300 mb-6">
-                تم تسجيل الدخول بنجاح، ولكن ملفك الشخصي غير موجود في قاعدة البيانات.
-                <br>
-                يرجى التواصل مع مدير النظام لحل المشكلة.
-            </p>
-            <button id="error-logout-btn" class="logout-btn w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg">
-                تسجيل الخروج
-            </button>
-        </div>
+        <footer class="text-center text-slate-500 dark:text-slate-400 mt-12"><h3 class="font-semibold mb-2">من نحن</h3><p>شركة ABANS للحلول التقنية</p><p>رقم الهاتف: <a href="tel:07770083284" class="hover:text-indigo-500">07770083284</a></p><p>البريد الإلكتروني: <a href="mailto:y7093515@gmail.com" class="hover:text-indigo-500">y7093515@gmail.com</a></p></footer>
     </div>
 
-
-    <!-- ===== ADMIN DASHBOARD ===== -->
-    <div id="admin-page" class="page">
+    <div id="admin-page" class="page" style="display: none;">
         <header class="bg-white dark:bg-slate-800 shadow-md p-4 flex justify-between items-center sticky top-0 z-40">
-            <div class="flex items-center gap-4">
-                <h1 class="text-xl font-bold text-indigo-600 dark:text-indigo-400">ABANS</h1>
-                <span class="text-lg font-semibold"><i class="fas fa-user-shield mr-2"></i> لوحة تحكم المدير</span>
-            </div>
-            <button id="admin-logout-btn" class="logout-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                <i class="fas fa-sign-out-alt mr-2"></i> تسجيل الخروج
-            </button>
+            <div class="flex items-center gap-4"><h1 class="text-xl font-bold text-indigo-600 dark:text-indigo-400">ABANS</h1><span class="text-lg font-semibold">لوحة تحكم المدير</span></div>
+            <button class="logout-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">تسجيل الخروج</button>
         </header>
-        <main class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg lg:col-span-1">
+        <main class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-bold mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">إدارة الموظفين</h2>
-                <form id="add-employee-form" class="mb-6 space-y-4">
-                    <h3 class="font-semibold text-lg">إضافة موظف جديد</h3>
-                    <input type="text" id="new-employee-name" placeholder="اسم الموظف الكامل" class="w-full p-2 bg-slate-100 dark:bg-slate-700 rounded-md" required>
-                    <input type="email" id="new-employee-email" placeholder="البريد الإلكتروني" class="w-full p-2 bg-slate-100 dark:bg-slate-700 rounded-md" required>
-                    <input type="password" id="new-employee-password" placeholder="كلمة المرور" class="w-full p-2 bg-slate-100 dark:bg-slate-700 rounded-md" required>
-                    <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-user-plus mr-2"></i> إضافة الموظف</button>
-                </form>
-                <h3 class="font-semibold text-lg mt-6">قائمة الموظفين</h3>
-                <div id="employees-list" class="mt-4 space-y-3 max-h-60 overflow-y-auto"></div>
+                <form id="add-employee-form" class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4"><input type="text" id="realName" placeholder="الاسم الحقيقي" class="w-full p-2 bg-slate-100 dark:bg-slate-700 rounded-md" required><input type="text" id="newUsername" placeholder="اسم المستخدم" class="w-full p-2 bg-slate-100 dark:bg-slate-700 rounded-md" required><input type="password" id="newPassword" placeholder="كلمة المرور" class="w-full p-2 bg-slate-100 dark:bg-slate-700 rounded-md" required><button type="submit" class="md:col-span-2 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">إضافة موظف</button></form>
+                <div class="overflow-x-auto"><table class="w-full text-right"><thead class="bg-slate-200 dark:bg-slate-700"><tr><th class="p-3">الاسم الحقيقي</th><th class="p-3">اسم المستخدم</th><th class="p-3">إجراءات</th></tr></thead><tbody id="employees-table"></tbody></table></div>
             </div>
-            
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg lg:col-span-2">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-bold mb-2 md:mb-0">سجل الحضور والتقارير اليومي</h2>
-                    <button id="download-excel" class="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                        <i class="fas fa-file-excel mr-2"></i> تحميل سجل Excel
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
+                <div class="flex justify-between items-center mb-4 border-b pb-2 border-slate-200 dark:border-slate-700"><h2 class="text-2xl font-bold">سجل الحضور والتقارير</h2><button id="download-excel" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm"><i class="fas fa-file-excel mr-2"></i>تحميل Excel</button></div>
+                <div class="overflow-y-auto max-h-[60vh]">
                     <table class="w-full text-right whitespace-nowrap">
-                        <thead class="bg-slate-200 dark:bg-slate-700">
+                        <thead class="bg-slate-200 dark:bg-slate-700 sticky top-0">
                             <tr>
-                                <th class="p-3">الموظف</th><th class="p-3">الحضور</th><th class="p-3">صورة</th><th class="p-3">الانصراف</th><th class="p-3">التقرير</th><th class="p-3">التقييم</th>
+                                <th class="p-3">الموظف</th>
+                                <th class="p-3">التاريخ</th>
+                                <th class="p-3">صورة الحضور</th>
+                                <th class="p-3">وقت الحضور</th>
+                                <th class="p-3">وقت الانصراف</th>
+                                <th class="p-3">التقرير</th>
+                                <th class="p-3">التقييم</th>
                             </tr>
                         </thead>
-                        <tbody id="attendance-log-table" class="divide-y divide-slate-200 dark:divide-slate-700"></tbody>
+                        <tbody id="attendance-table"></tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- ===== EMPLOYEE PAGE ===== -->
-    <div id="employee-page" class="page">
-        <header class="bg-white dark:bg-slate-800 shadow-md p-4 flex justify-between items-center sticky top-0 z-40">
-            <div class="flex items-center gap-4">
-                <h1 class="text-xl font-bold text-indigo-600 dark:text-indigo-400">ABANS</h1>
-                <span id="welcome-message" class="text-lg font-semibold"></span>
-            </div>
-            <button id="employee-logout-btn" class="logout-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                <i class="fas fa-sign-out-alt mr-2"></i> تسجيل الخروج
-            </button>
-        </header>
-        <main class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div id="attendance-card" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
+    <div id="employee-page" class="page" style="display: none;">
+        <header class="bg-white dark:bg-slate-800 shadow-md p-4 flex justify-between items-center sticky top-0 z-40"><div class="flex items-center gap-4"><h1 class="text-xl font-bold text-indigo-600 dark:text-indigo-400">ABANS</h1><span id="welcome-message" class="text-lg font-semibold"></span></div><button class="logout-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">تسجيل الخروج</button></header>
+        <main class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div id="attendance-card" class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg lg:col-span-1">
                 <h2 class="text-2xl font-bold mb-4">تسجيل الدوام</h2>
                 <div id="camera-section">
-                    <p id="camera-status" class="text-slate-500 dark:text-slate-400 mb-4 text-center">التقط صورة لتفعيل أزرار الدوام.</p>
-                    <div class="relative w-full aspect-video bg-slate-200 dark:bg-slate-700 rounded-lg overflow-hidden">
-                        <video id="camera-preview" class="w-full h-full object-cover" autoplay playsinline></video>
-                        <canvas id="camera-canvas" class="hidden"></canvas>
-                    </div>
-                    <div id="camera-controls" class="mt-4 grid grid-cols-2 gap-4">
-                        <button id="start-camera-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg col-span-2"><i class="fas fa-camera mr-2"></i> تشغيل الكاميرا</button>
-                        <button id="capture-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg hidden"><i class="fas fa-camera-retro mr-2"></i> التقاط الصورة</button>
+                    <p id="camera-status" class="text-slate-500 dark:text-slate-400 mb-4">يجب التقاط صورة لتفعيل أزرار الدوام.</p>
+                    <video id="camera-preview" class="w-full rounded-lg mb-4 bg-slate-200 dark:bg-slate-700 hidden" autoplay playsinline></video>
+                    <img id="photo-preview" class="w-full rounded-lg mb-4 hidden"/>
+                    <canvas id="camera-canvas" class="hidden"></canvas>
+                    <button id="start-camera-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg mb-2"><i class="fas fa-camera mr-2"></i> تشغيل الكاميرا</button>
+                    <div id="capture-controls" class="hidden"><button id="capture-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg mb-2"><i class="fas fa-camera-retro mr-2"></i> التقاط الآن</button></div>
+                    <div id="confirm-controls" class="hidden grid grid-cols-2 gap-2">
+                        <button id="confirm-photo-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-check mr-2"></i> تأكيد الصورة</button>
+                        <button id="retake-photo-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-redo mr-2"></i> إعادة الالتقاط</button>
                     </div>
                 </div>
                 <div id="clocking-section" class="mt-6 border-t pt-4 border-slate-200 dark:border-slate-700">
-                     <p id="attendance-info" class="text-center font-semibold mb-4"></p>
                     <div class="grid grid-cols-2 gap-4">
-                        <button id="clock-in-btn" class="bg-green-600 text-white font-bold py-3 px-4 rounded-lg disabled:bg-slate-400 dark:disabled:bg-slate-600 disabled:cursor-not-allowed flex items-center justify-center" disabled><i class="fas fa-fingerprint mr-2"></i> حضور</button>
-                        <button id="clock-out-btn" class="bg-orange-500 text-white font-bold py-3 px-4 rounded-lg disabled:bg-slate-400 dark:disabled:bg-slate-600 disabled:cursor-not-allowed flex items-center justify-center" disabled><i class="fas fa-sign-out-alt mr-2"></i> انصراف</button>
+                        <button id="clock-in-btn" class="bg-green-500 text-white font-bold py-3 px-4 rounded-lg disabled:bg-slate-400 disabled:cursor-not-allowed" disabled><i class="fas fa-fingerprint mr-2"></i> حضور</button>
+                        <button id="clock-out-btn" class="bg-orange-500 text-white font-bold py-3 px-4 rounded-lg disabled:bg-slate-400 disabled:cursor-not-allowed" disabled><i class="fas fa-sign-out-alt mr-2"></i> انصراف</button>
                     </div>
+                    <p id="attendance-status" class="text-center mt-4 font-semibold"></p>
                 </div>
             </div>
-            
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
-                 <h2 class="text-2xl font-bold mb-4">التقرير والتقييم اليومي</h2>
-                 <div class="mb-8">
-                     <h3 class="text-lg font-semibold mb-2">رفع تقرير العمل اليومي</h3>
-                     <input type="file" id="report-file-input" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
-                     <button id="upload-report-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center">
-                         <i class="fas fa-upload mr-2"></i> <span>اختر وارفع التقرير (Word)</span>
-                     </button>
-                     <p id="report-status" class="text-center mt-4 font-semibold text-green-500"></p>
-                 </div>
-                 <div>
-                     <h3 class="text-lg font-semibold mb-2">تقييم المدير لأداء اليوم</h3>
-                     <div class="bg-slate-100 dark:bg-slate-700 p-6 rounded-lg text-center">
-                         <p class="text-slate-500 dark:text-slate-400 mb-2">تقييمك هو:</p>
-                         <p id="daily-rating" class="text-5xl font-bold text-indigo-600 dark:text-indigo-400">N/A</p>
-                     </div>
-                 </div>
-            </div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg lg:col-span-1"><h2 class="text-2xl font-bold mb-4">التقرير والتقييم اليومي</h2><div class="mb-8"><h3 class="text-lg font-semibold mb-2">رفع تقرير العمل</h3><input type="file" id="report-file-input" accept=".doc,.docx"><button id="upload-report-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg"><i class="fas fa-upload mr-2"></i> اختر وارفع التقرير</button><p id="report-status" class="text-center mt-4 font-semibold text-green-500"></p></div><div><h3 class="text-lg font-semibold mb-2">تقييم المدير اليومي</h3><div class="bg-slate-100 dark:bg-slate-700 p-6 rounded-lg text-center"><p class="text-slate-500 dark:text-slate-400 mb-2">تقييمك لهذا اليوم هو:</p><p id="daily-rating" class="text-5xl font-bold text-indigo-600 dark:text-indigo-400">---</p></div></div></div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg lg:col-span-1"><h2 class="text-2xl font-bold mb-4">سجل حضوري</h2><div class="overflow-y-auto max-h-[60vh]"><table class="w-full text-right"><thead class="bg-slate-200 dark:bg-slate-700 sticky top-0"><tr><th class="p-2">التاريخ</th><th class="p-2">الحضور</th><th class="p-2">الانصراف</th></tr></thead><tbody id="my-attendance-table"></tbody></table></div></div>
         </main>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBYnNxa72qyaQMBhoe3ErhMCf1K0RgDjy0",
-            authDomain: "abans-98404.firebaseapp.com",
-            projectId: "abans-98404",
-            storageBucket: "abans-98404.appspot.com",
-            messagingSenderId: "613249666349",
-            appId: "1:613249666349:web:5ba7fd5615402fd9ecd7a4",
-            measurementId: "G-34QSSB0D2X"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        
-        const ADMIN_UID = "sxhzPMoV8ES6PbsmcIuveR0p7uD2";
-
-        const pages = {
-            login: document.getElementById('login-page'),
-            admin: document.getElementById('admin-page'),
-            employee: document.getElementById('employee-page'),
-            error: document.getElementById('error-page'),
-            loading: document.getElementById('loading-overlay')
-        };
-        const loginForm = document.getElementById('login-form');
-        const loginError = document.getElementById('login-error');
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const pages = document.querySelectorAll('.page');
         const themeToggleBtn = document.getElementById('theme-toggle');
+        const captchaQuestionEl = document.getElementById('captcha-question');
+        let correctAnswer, videoStream;
 
-        const showPage = (pageName) => {
-            Object.values(pages).forEach(p => p.style.display = 'none');
-            pages[pageName].style.display = 'block';
-            if (pageName === 'login' || pageName === 'error') {
-                 pages[pageName].style.display = 'flex';
-            }
-        };
-        const showLoading = (isLoading) => {
-            pages.loading.style.display = isLoading ? 'flex' : 'none';
-        };
-        const getTodayDateString = () => new Date().toISOString().split('T')[0];
-
-        themeToggleBtn.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            showLoading(true);
-            try {
-                if (user) {
-                    if (user.uid === ADMIN_UID) {
-                        initAdminDashboard();
-                        showPage('admin');
-                    } else {
-                        const userDocRef = doc(db, "users", user.uid);
-                        const userDoc = await getDoc(userDocRef);
-                        if (userDoc.exists()) {
-                            initEmployeePage(user, userDoc.data());
-                            showPage('employee');
-                        } else {
-                            // ** NEW LOGIC **
-                            // User is authenticated but has no profile document.
-                            // Show a clear error page instead of logging out.
-                            console.error("CRITICAL: User authenticated but Firestore document is missing.");
-                            showPage('error');
-                        }
-                    }
-                } else {
-                    showPage('login');
-                }
-            } catch (error) {
-                console.error("Auth state change error:", error);
-                const errorText = document.getElementById('error-message-text');
-                if (error.code === 'permission-denied') {
-                    errorText.textContent = "خطأ فادح: ليس لديك الإذن للوصول إلى بياناتك. تحقق من قواعد الأمان في Firebase.";
-                } else {
-                    errorText.textContent = "حدث خطأ غير متوقع أثناء التحقق من هويتك.";
-                }
-                showPage('error');
-            } finally {
-                showLoading(false);
-            }
-        });
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            showLoading(true);
-            loginError.classList.add('hidden');
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged will handle routing
-            } catch (error) {
-                loginError.textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
-                loginError.classList.remove('hidden');
-                showLoading(false);
-            }
-        });
-
-        const handleLogout = () => signOut(auth);
-        document.querySelectorAll('.logout-btn').forEach(btn => btn.addEventListener('click', handleLogout));
+        const getDb = () => JSON.parse(localStorage.getItem('abans_db'));
+        const saveDb = (db) => localStorage.setItem('abans_db', JSON.stringify(db));
         
-        function initAdminDashboard() {
-            const addEmployeeForm = document.getElementById('add-employee-form');
-            const employeesListDiv = document.getElementById('employees-list');
-            const attendanceLogTable = document.getElementById('attendance-log-table');
-            const downloadExcelBtn = document.getElementById('download-excel');
+        const initSystem = () => { if (!localStorage.getItem('abans_db')) { localStorage.setItem('abans_db', JSON.stringify({ users: [], attendance: [] })); } if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.add('dark'); } };
+        
+        const showPage = (pageId) => { pages.forEach(page => { page.style.display = 'none'; }); const activePage = document.getElementById(pageId); if (activePage) { activePage.style.display = (pageId === 'login-page') ? 'flex' : 'block'; } };
+        
+        const generateCaptcha = () => { const num1 = Math.floor(Math.random() * 10) + 1; const num2 = Math.floor(Math.random() * 10) + 1; correctAnswer = num1 + num2; captchaQuestionEl.textContent = `${num1} + ${num2} = ؟`; };
+        
+        const loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', (e) => { e.preventDefault(); const errorMessage = document.getElementById('error-message'); errorMessage.classList.add('hidden'); if (parseInt(document.getElementById('captcha-answer').value, 10) !== correctAnswer) { errorMessage.textContent = 'إجابة التحقق الأمني خاطئة.'; errorMessage.classList.remove('hidden'); generateCaptcha(); return; } const username = document.getElementById('username').value.trim(); const password = document.getElementById('password').value.trim(); if (username === 'admin' && password === 'admin123') { sessionStorage.setItem('loggedInUser', JSON.stringify({ username: 'admin', role: 'admin' })); renderAdminPage(); showPage('admin-page'); return; } const user = getDb().users.find(u => u.username === username && u.password === password); if (user) { sessionStorage.setItem('loggedInUser', JSON.stringify(user)); renderEmployeePage(); showPage('employee-page'); } else { errorMessage.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة.'; errorMessage.classList.remove('hidden'); generateCaptcha(); } });
+        
+        document.querySelectorAll('.logout-btn').forEach(btn => { btn.addEventListener('click', () => { if (videoStream) { videoStream.getTracks().forEach(track => track.stop()); } sessionStorage.removeItem('loggedInUser'); document.getElementById('login-form').reset(); generateCaptcha(); showPage('login-page'); }); });
+        
+        themeToggleBtn.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); });
 
-            addEmployeeForm.addEventListener('submit', async (e) => {
-                e.preventDefault(); showLoading(true);
-                const name = document.getElementById('new-employee-name').value;
-                const email = document.getElementById('new-employee-email').value;
-                const password = document.getElementById('new-employee-password').value;
+        const renderAdminPage = () => {
+            const renderEmployees = () => { const employeesTable = document.getElementById('employees-table'); employeesTable.innerHTML = ''; getDb().users.forEach(user => { employeesTable.innerHTML += `<tr class="border-b border-slate-200 dark:border-slate-700"><td class="p-3">${user.realName}</td><td class="p-3">${user.username}</td><td class="p-3"><button onclick="window.app.changePassword('${user.username}')" class="text-blue-500 hover:text-blue-700 text-sm">تغيير كلمة المرور</button></td></tr>`; }); };
+            const renderAttendance = () => {
+                const attendanceTable = document.getElementById('attendance-table');
+                const db = getDb();
+                attendanceTable.innerHTML = '';
+                db.attendance.slice().reverse().forEach(record => {
+                    const user = db.users.find(u => u.username === record.username);
+                    // --- التعديل هنا ---
+                    const photoCell = record.photo 
+                        ? `<a href="${record.photo}" download="photo-${record.date}-${user.username}.jpg" class="text-green-600 dark:text-green-400 hover:underline">تحميل الصورة</a>` 
+                        : 'لا توجد';
+
+                    attendanceTable.innerHTML += `
+                        <tr class="border-b border-slate-200 dark:border-slate-700 align-middle">
+                            <td class="p-3">${user ? user.realName : record.username}</td>
+                            <td class="p-3">${record.date}</td>
+                            <td class="p-3">${photoCell}</td>
+                            <td class="p-3">${record.clockIn || '---'}</td>
+                            <td class="p-3">${record.clockOut || '---'}</td>
+                            <td class="p-3">${record.report ? `<a href="${record.report.url}" download="${record.report.name}" class="text-blue-500 hover:underline">تحميل التقرير</a>` : 'لم يرفع'}</td>
+                            <td class="p-3"><input type="number" min="1" max="10" value="${record.rating || ''}" onchange="window.app.updateRating('${record.username}', '${record.date}', this.value)" class="w-16 p-1 text-center bg-slate-100 dark:bg-slate-600 rounded-md"></td>
+                        </tr>`;
+                });
+            };
+            renderEmployees();
+            renderAttendance();
+        };
+
+        document.getElementById('add-employee-form').addEventListener('submit', (e) => { e.preventDefault(); const db = getDb(); const realName = document.getElementById('realName').value.trim(); const username = document.getElementById('newUsername').value.trim(); const password = document.getElementById('newPassword').value.trim(); if (db.users.find(u => u.username === username)) { alert('اسم المستخدم هذا موجود بالفعل.'); return; } db.users.push({ realName, username, password, role: 'employee' }); saveDb(db); renderAdminPage(); e.target.reset(); alert('تمت إضافة الموظف بنجاح.'); });
+        document.getElementById('download-excel').addEventListener('click', () => { const db = getDb(); const data = db.attendance.map(rec => ({ "الاسم": (db.users.find(u => u.username === rec.username) || {}).realName || rec.username, "التاريخ": rec.date, "الحضور": rec.clockIn, "الانصراف": rec.clockOut, "التقييم": rec.rating })); if(data.length === 0) return alert("لا توجد بيانات."); const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Attendance"); XLSX.writeFile(wb, "Abans_Attendance_Log.xlsx"); });
+        
+        const renderEmployeePage = () => {
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            document.getElementById('welcome-message').textContent = `أهلاً بك، ${user.realName}`;
+            
+            const findOrCreateTodayRecord = () => {
+                const db = getDb(); const today = new Date().toISOString().split('T')[0]; let recordIndex = db.attendance.findIndex(r => r.username === user.username && r.date === today);
+                if (recordIndex === -1) { db.attendance.push({ username: user.username, date: today }); recordIndex = db.attendance.length - 1; } return { db, recordIndex };
+            };
+
+            const updateEmployeeUI = () => {
+                const { db, recordIndex } = findOrCreateTodayRecord();
+                const record = db.attendance[recordIndex];
+                
+                const clockInBtn = document.getElementById('clock-in-btn');
+                const clockOutBtn = document.getElementById('clock-out-btn');
+                
+                if (record.photo) {
+                    document.getElementById('camera-section').style.display = 'none';
+                    clockInBtn.disabled = false;
+                    clockOutBtn.disabled = false;
+                }
+                if (record.clockIn) { clockInBtn.textContent = `تم: ${record.clockIn}`; clockInBtn.disabled = true; document.getElementById('attendance-status').textContent = `تم تسجيل حضورك.`; }
+                if (record.clockOut) { clockOutBtn.disabled = true; clockOutBtn.textContent = `تم: ${record.clockOut}`; document.getElementById('attendance-status').textContent = `تم تسجيل انصرافك.`; }
+                if (record.report) { document.getElementById('report-status').textContent = `تم رفع التقرير.`; }
+                document.getElementById('daily-rating').textContent = record.rating ? `${record.rating}/10` : '---';
+
+                document.getElementById('my-attendance-table').innerHTML = '';
+                db.attendance.filter(r => r.username === user.username).slice().reverse().forEach(rec => { document.getElementById('my-attendance-table').innerHTML += `<tr class="border-b border-slate-200 dark:border-slate-700"><td class="p-2">${rec.date}</td><td class="p-2">${rec.clockIn || '---'}</td><td class="p-2">${rec.clockOut || '---'}</td></tr>`; });
+            };
+
+            const startCameraBtn = document.getElementById('start-camera-btn');
+            const captureBtn = document.getElementById('capture-btn');
+            const confirmPhotoBtn = document.getElementById('confirm-photo-btn');
+            const retakePhotoBtn = document.getElementById('retake-photo-btn');
+            const videoEl = document.getElementById('camera-preview');
+            const photoEl = document.getElementById('photo-preview');
+            const canvasEl = document.getElementById('camera-canvas');
+            const cameraStatus = document.getElementById('camera-status');
+            const captureControls = document.getElementById('capture-controls');
+            const confirmControls = document.getElementById('confirm-controls');
+
+            const showCameraView = async () => {
+                cameraStatus.textContent = 'جاري محاولة تشغيل الكاميرا...';
                 try {
-                    // This is a simplified approach. For production, use Cloud Functions to create users.
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    // IMPORTANT: Create the user document in Firestore right after creating the auth user.
-                    await setDoc(doc(db, "users", userCredential.user.uid), { name, email });
-                    alert(`تم إنشاء حساب للموظف ${name} بنجاح.`);
-                    addEmployeeForm.reset();
-                } catch (error) { 
-                    alert("خطأ في إنشاء الموظف: " + error.message);
-                    console.error("Error creating employee:", error);
-                } 
-                finally { showLoading(false); }
-            });
+                    videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } });
+                    videoEl.srcObject = videoStream;
+                    videoEl.style.display = 'block';
+                    photoEl.style.display = 'none';
+                    captureControls.style.display = 'block';
+                    confirmControls.style.display = 'none';
+                    startCameraBtn.style.display = 'none';
+                    cameraStatus.textContent = 'الكاميرا تعمل، اضغط على زر الالتقاط.';
+                } catch (err) { cameraStatus.textContent = 'فشل الوصول للكاميرا. تأكد من منح الإذن.'; startCameraBtn.style.display = 'block'; }
+            };
 
-            const usersQuery = query(collectio
+            startCameraBtn.onclick = showCameraView;
+
+            captureBtn.onclick = () => {
+                canvasEl.width = videoEl.videoWidth;
+                canvasEl.height = videoEl.videoHeight;
+                canvasEl.getContext('2d').drawImage(videoEl, 0, 0);
+                photoEl.src = canvasEl.toDataURL('image/jpeg');
+                
+                videoEl.style.display = 'none';
+                photoEl.style.display = 'block';
+                captureControls.style.display = 'none';
+                confirmControls.style.display = 'block';
+                cameraStatus.textContent = 'هل الصورة واضحة؟';
+                if (videoStream) { videoStream.getTracks().forEach(track => track.stop()); }
+            };
+
+            retakePhotoBtn.onclick = showCameraView;
+
+            confirmPhotoBtn.onclick = () => {
+                const imageData = photoEl.src;
+                const { db, recordIndex } = findOrCreateTodayRecord();
+                db.attendance[recordIndex].photo = imageData;
+                saveDb(db);
+
+                alert('تم حفظ الصورة بنجاح! يمكنك الآن تسجيل الدوام.');
+                updateEmployeeUI();
+            };
+
+            document.getElementById('clock-in-btn').onclick = () => { const { db, recordIndex } = findOrCreateTodayRecord(); if (db.attendance[recordIndex].clockIn) return alert('تم تسجيل الحضور بالفعل.'); db.attendance[recordIndex].clockIn = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); saveDb(db); updateEmployeeUI(); };
+            document.getElementById('clock-out-btn').onclick = () => { const { db, recordIndex } = findOrCreateTodayRecord(); if (!db.attendance[recordIndex].clockIn) return alert('يجب تسجيل الحضور أولاً.'); db.attendance[recordIndex].clockOut = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }); saveDb(db); updateEmployeeUI(); };
+            document.getElementById('upload-report-btn').onclick = () => document.getElementById('report-file-input').click();
+            document.getElementById('report-file-input').onchange = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { const { db, recordIndex } = findOrCreateTodayRecord(); db.attendance[recordIndex].report = { name: file.name, url: event.target.result }; saveDb(db); updateEmployeeUI(); alert('تم رفع التقرير بنجاح.'); }; reader.readAsDataURL(file); };
+            updateEmployeeUI();
+        };
+
+        window.app = {
+            changePassword: (username) => { const newPassword = prompt(`أدخل كلمة المرور الجديدة للموظف ${username}:`); if (newPassword && newPassword.trim() !== '') { const db = getDb(); const user = db.users.find(u => u.username === username); if (user) { user.password = newPassword.trim(); saveDb(db); alert('تم التغيير.'); renderAdminPage(); } } },
+            updateRating: (username, date, rating) => { const db = getDb(); const record = db.attendance.find(r => r.username === username && r.date === date); if (record) { record.rating = parseInt(rating, 10); saveDb(db); } }
+        };
+
+        const checkSession = () => { const user = JSON.parse(sessionStorage.getItem('loggedInUser')); if (user) { if (user.role === 'admin') { renderAdminPage(); showPage('admin-page'); } else { renderEmployeePage(); showPage('employee-page'); } } else { generateCaptcha(); showPage('login-page'); } };
+        
+        initSystem();
+        checkSession();
+    });
+    </script>
+</body>
+</html>
